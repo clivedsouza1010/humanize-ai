@@ -1,0 +1,13 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "humanize-ai",
+  "description": "Checks whether writing reads as AI-written, shows why, and rewrites it in rounds until local detectors read it as human and the facts still match.",
+  "author": {
+    "name": "Clive Dsouza"
+  },
+  "homepage": "https://github.com/clivedsouza1010/humanize-ai",
+  "repository": "https://github.com/clivedsouza1010/humanize-ai",
+  "license": "MIT",
+  "keywords": ["writing", "ai-detection", "rewrite", "docs"],
+  "skills": ["./"]
+}

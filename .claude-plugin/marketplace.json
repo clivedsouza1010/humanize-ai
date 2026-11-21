@@ -1,0 +1,14 @@
+{
+  "name": "humanize-ai",
+  "description": "The humanize-ai skill as a single-plugin marketplace.",
+  "owner": {
+    "name": "Clive Dsouza"
+  },
+  "plugins": [
+    {
+      "name": "humanize-ai",
+      "description": "Checks whether writing reads as AI-written, shows why, and rewrites it in rounds until local detectors read it as human and the facts still match.",
+      "source": "./"
+    }
+  ]
+}

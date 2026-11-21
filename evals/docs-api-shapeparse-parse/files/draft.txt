@@ -1,0 +1,74 @@
+## `shapeparse.parse()`
+
+```python
+shapeparse.parse(
+    text: str,
+    model: type[T],
+    *,
+    mode: Literal["strict", "lenient"] = "lenient",
+    extract: Literal["auto", "first", "last", "none"] = "auto",
+    context: dict[str, Any] | None = None,
+) -> ParseResult[T]
+```
+
+Parses a model response into an instance of `model`, which can be any Pydantic `BaseModel` subclass, a `TypedDict`, or a dataclass.
+
+`parse` first locates the JSON payload in `text`, then validates it against `model`. It never raises on invalid input. Check `result.ok` and read either `result.value` or `result.error`.
+
+### Parameters
+
+**`text`**: The raw model output. It can contain prose, Markdown fences, or more than one JSON value; see `extract`.
+
+**`model`**: The target type. For `TypedDict` and dataclasses, shapeparse builds a Pydantic `TypeAdapter` on first use and caches it, so repeated calls with the same type don't pay that cost again.
+
+**`mode`**: In `"lenient"` mode, Pydantic's lax coercion applies: `"3"` validates as `int`, `"true"` as `bool`, and unknown keys are ignored. `"strict"` disables coercion and rejects unknown keys. Use strict mode in tests and when the output feeds anything that writes data; lenient is usually fine for display.
+
+**`extract`**: How to find the payload.
+
+- `"auto"`: if the whole string parses as JSON, use it. Otherwise use the contents of the first fenced code block tagged `json`, and failing that, the first balanced `{...}` or `[...]`.
+- `"first"` / `"last"`: use the first or last balanced JSON value. `"last"` is useful when the model writes its reasoning before the answer.
+- `"none"`: treat `text` as JSON and nothing else.
+
+**`context`**: Passed through to Pydantic as validation context, for validators that need outside data such as a list of allowed IDs.
+
+### Return value
+
+A `ParseResult[T]` with these attributes:
+
+| Attribute | Type | Description |
+| --- | --- | --- |
+| `ok` | `bool` | Whether validation succeeded |
+| `value` | `T \| None` | The parsed instance, if `ok` |
+| `error` | `ParseError \| None` | What went wrong, if not `ok` |
+| `raw_json` | `str \| None` | The extracted JSON substring, if one was found |
+
+`ParseError.kind` is one of `"no_json"`, `"invalid_json"` or `"validation"`. For validation failures, `ParseError.issues` holds Pydantic's error list, and `ParseError.feedback()` formats it as short text suitable for sending back to the model.
+
+### Example
+
+```python
+from pydantic import BaseModel
+import shapeparse
+
+class Sentiment(BaseModel):
+    label: Literal["positive", "negative", "neutral"]
+    score: float
+
+reply = """Let me think about this. The review mentions a broken hinge
+but praises the screen.
+
+{"label": "neutral", "score": 0.55}"""
+
+result = shapeparse.parse(reply, Sentiment, extract="last")
+
+if result.ok:
+    save(result.value)
+else:
+    retry_prompt = f"Your answer didn't match the format:\n{result.error.feedback()}"
+```
+
+### Notes
+
+`parse` doesn't repair malformed JSON. A trailing comma or an unescaped quote gives you `kind="invalid_json"`. If you see that often, use provider-side structured output instead of fixing it after the fact.
+
+The async variant `shapeparse.aparse()` takes the same arguments and exists only for symmetry with `shapeparse.astream()`. Parsing itself is synchronous.

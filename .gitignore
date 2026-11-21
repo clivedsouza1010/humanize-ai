@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.DS_Store
+# retrain.py's scratch output: the fit that has not passed the gate
+scripts/blend-candidate.json
+bench/metrics-candidate.md

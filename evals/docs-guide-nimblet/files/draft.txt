@@ -1,0 +1,114 @@
+# Getting started with nimblet
+
+nimblet is an async HTTP client for Python built around connection pooling and structured retries. This guide takes you from install to a working client that talks to a real API, handles failures, and shuts down cleanly. It should take about ten minutes.
+
+## Prerequisites
+
+- Python 3.10 or newer
+- A project with a virtual environment
+
+## 1. Install
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install nimblet-http
+```
+
+Check that it works:
+
+```bash
+python -c "import nimblet; print(nimblet.__version__)"
+```
+
+## 2. Make your first request
+
+Create `main.py`:
+
+```python
+import asyncio
+import nimblet
+
+async def main():
+    async with nimblet.Client(base_url="https://api.github.com") as client:
+        resp = await client.get("/repos/python/cpython")
+        data = resp.json()
+        print(data["full_name"], data["stargazers_count"])
+
+asyncio.run(main())
+```
+
+Run it:
+
+```bash
+python main.py
+```
+
+Using `async with` matters. It closes the connection pool when you're done. If you create a client without it, call `await client.aclose()` yourself.
+
+## 3. Reuse one client
+
+Create the client once and share it. Each client keeps a pool of open connections, so making a new one per request throws away the main benefit.
+
+In a FastAPI app, that looks like:
+
+```python
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+import nimblet
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.http = nimblet.Client(base_url="https://api.example.com")
+    yield
+    await app.state.http.aclose()
+
+app = FastAPI(lifespan=lifespan)
+```
+
+## 4. Add timeouts
+
+By default nimblet waits up to 10 seconds in total per request. Set tighter limits for each phase:
+
+```python
+client = nimblet.Client(
+    timeout=nimblet.Timeout(connect=2, read=5, total=8),
+)
+```
+
+A `nimblet.TimeoutError` is raised when any limit is hit.
+
+## 5. Retry transient failures
+
+```python
+client = nimblet.Client(
+    retry=nimblet.Retry(
+        attempts=4,
+        backoff=0.5,
+        statuses={429, 502, 503, 504},
+    ),
+)
+```
+
+nimblet waits `0.5`, `1`, then `2` seconds between attempts, with some random jitter. It honors `Retry-After` if the server sends it. Only idempotent methods are retried unless you pass `retry_methods`.
+
+## 6. Make requests in parallel
+
+```python
+async with nimblet.Client(base_url="https://api.example.com") as client:
+    responses = await asyncio.gather(
+        *(client.get(f"/items/{i}") for i in range(50))
+    )
+```
+
+Use `max_connections` to cap how many run at once:
+
+```python
+client = nimblet.Client(limits=nimblet.Limits(max_connections=20))
+```
+
+## Next steps
+
+- Read the guide on authentication hooks to attach tokens automatically.
+- See the API reference for `nimblet.Client` for the full option list.
+- Turn on `NIMBLET_LOG=debug` to see each request and retry in your logs.

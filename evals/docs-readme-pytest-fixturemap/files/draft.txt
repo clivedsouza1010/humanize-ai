@@ -1,0 +1,102 @@
+# pytest-fixturemap
+
+A pytest plugin that shows which fixtures each test actually pulls in, including the ones it gets indirectly.
+
+Once a test suite grows past a few hundred tests, `conftest.py` files start stacking up and it gets hard to tell why a "unit" test is suddenly spinning up a database. pytest-fixturemap walks the fixture graph for every collected test and prints it as a tree, so you can see the chain that got you there.
+
+```
+$ pytest --fixturemap tests/test_orders.py::test_total_with_discount
+
+tests/test_orders.py::test_total_with_discount
+├── order_factory           (tests/conftest.py:31, function)
+│   └── db_session          (tests/conftest.py:12, function)
+│       └── engine          (conftest.py:8, session)
+│           └── postgres    (conftest.py:3, session)  [slow]
+└── discount_rules          (tests/test_orders.py:9, module)
+```
+
+## Installation
+
+```
+pip install pytest-fixturemap
+```
+
+Supports Python 3.9+ and pytest 7.0+. The plugin registers itself through the `pytest11` entry point, so there's nothing to add to your `conftest.py`.
+
+## Usage
+
+`--fixturemap` only collects. No tests run.
+
+```
+pytest --fixturemap
+pytest --fixturemap -k checkout
+pytest --fixturemap tests/api/
+```
+
+### Options
+
+| Flag | Description |
+| --- | --- |
+| `--fixturemap` | Print the fixture tree for each collected test and exit. |
+| `--fixturemap-format={tree,json,dot}` | Output format. `dot` can be piped into Graphviz. |
+| `--fixturemap-depth=N` | Stop expanding after N levels. |
+| `--fixturemap-hide-builtin` | Hide pytest's built-in fixtures (`tmp_path`, `capsys`, `request`, ...). |
+| `--fixturemap-who-uses=NAME` | Invert the view: list every test that depends on fixture `NAME`, directly or not. |
+
+The inverted view is handy before you change a fixture:
+
+```
+$ pytest --fixturemap-who-uses=db_session
+db_session is used by 214 tests (37 directly, 177 through other fixtures)
+...
+```
+
+### Flagging slow fixtures
+
+Mark expensive fixtures so they stand out in the tree:
+
+```python
+import pytest
+from pytest_fixturemap import slow
+
+@slow
+@pytest.fixture(scope="session")
+def postgres():
+    ...
+```
+
+Or list them in config instead of decorating:
+
+```ini
+# pytest.ini
+[pytest]
+fixturemap_slow = postgres redis_server browser
+```
+
+### Graphviz output
+
+```
+pytest --fixturemap --fixturemap-format=dot tests/test_orders.py | dot -Tsvg > fixtures.svg
+```
+
+## Limitations
+
+- Fixtures requested dynamically with `request.getfixturevalue()` can't be seen at collection time and won't show up.
+- Parametrized fixtures appear once, not once per param.
+- `usefixtures` markers applied through `pytestmark` are supported. Ones added in `pytest_collection_modifyitems` hooks by other plugins may or may not be, depending on hook order.
+
+## Development
+
+```
+git clone https://git.example.com/pytest-fixturemap
+cd pytest-fixturemap
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+pytest
+```
+
+Tests use `pytester`, so each case runs against a small generated project.
+
+## License
+
+MIT. See `LICENSE`.

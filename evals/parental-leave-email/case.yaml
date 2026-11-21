@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: parental-leave-email
+expected_outcome: |
+  final.txt is a rewrite of draft.txt (claude-opus email) that local AI detectors read as human,
+  keeps every fact, adds none, and keeps the genre.
+context:
+  scaffold_script: place-files.sh

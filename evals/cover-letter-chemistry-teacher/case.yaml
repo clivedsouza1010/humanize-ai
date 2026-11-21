@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: cover-letter-chemistry-teacher
+expected_outcome: |
+  final.txt is a rewrite of draft.txt (claude-sonnet cover) that local AI detectors read as human,
+  keeps every fact, adds none, and keeps the genre.
+context:
+  scaffold_script: place-files.sh

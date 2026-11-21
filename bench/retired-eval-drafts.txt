@@ -1,0 +1,7 @@
+# sha1 of canon(text) for eval drafts edited after they were written. The original text is still a row
+# in the source data, so build_set.py keeps excluding it by hash once the draft no longer matches.
+a76be71f88f99fd32c815cff9eecf31fa844b246 docs-readme-reqid-mw, before its rename to a made-up package
+6920b94412fcb206a426c6d8f1a18de40e4e085a docs-readme-pytest-fixturemap, before its clone URL moved to example.com
+d2a63fb554f6196e109884a6451b6757ece24ee9 docs-api-shapeparse-parse, before its rename off a real PyPI package
+534697b6639888acc51b57207c729580be293a1a casual-game-launch-post, before its game was renamed to a made-up title
+7dad1a50686af340ab0f246502a93dc61a6bdd74 docs-guide-nimblet, before its rename off a real PyPI package

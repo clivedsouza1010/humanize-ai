@@ -1,0 +1,89 @@
+# reqid-mw
+
+Small Express middleware that gives every request an ID. It reuses an ID from an incoming header when there is one, and echoes the ID back on the response.
+
+## Install
+
+```sh
+npm install reqid-mw
+```
+
+Needs Node 18 or later. Works with Express 4 and 5.
+
+## Usage
+
+```js
+const express = require('express');
+const requestId = require('reqid-mw');
+
+const app = express();
+app.use(requestId());
+
+app.get('/', (req, res) => {
+  console.log(req.id);
+  res.send('ok');
+});
+```
+
+The ID is available as `req.id` and as `res.locals.requestId`, so templates and error handlers can read it without touching the request object.
+
+By default the middleware looks for an `X-Request-Id` header. If one is present and passes validation, it is reused. Otherwise a new UUID v4 is generated. The final value is written to the `X-Request-Id` response header.
+
+## Options
+
+```js
+app.use(requestId({
+  header: 'X-Correlation-Id',
+  generator: () => `req_${Date.now().toString(36)}`,
+  trustIncoming: false,
+}));
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `header` | `'X-Request-Id'` | Header to read from and write to. |
+| `generator` | `crypto.randomUUID` | Function that returns a new ID. |
+| `trustIncoming` | `true` | Reuse the ID from the incoming header. Set to `false` on the public edge of your network. |
+| `setResponseHeader` | `true` | Write the ID to the response. |
+| `maxLength` | `128` | Incoming IDs longer than this are thrown away and replaced. |
+
+## Incoming ID validation
+
+An incoming ID is accepted only if it matches `/^[\w.\-:]+$/` and is no longer than `maxLength`. Anything else is ignored and a fresh ID is generated. This keeps newlines and other odd characters out of your logs.
+
+## Reading the ID outside a handler
+
+The middleware stores the ID in an `AsyncLocalStorage`, so code that has no access to `req` can still get it:
+
+```js
+const { getRequestId } = require('reqid-mw');
+
+function logLine(message) {
+  console.log(`[${getRequestId() ?? '-'}] ${message}`);
+}
+```
+
+`getRequestId()` returns `undefined` when called outside a request.
+
+## TypeScript
+
+Types ship with the package. Importing it adds `id: string` to `Express.Request`.
+
+```ts
+import requestId, { getRequestId } from 'reqid-mw';
+```
+
+## Limits
+
+- The ID is not forwarded to other services for you. If you call another API, add the header yourself: `headers: { 'X-Request-Id': req.id }`.
+- If you mount the middleware after other middleware, those earlier handlers will not see `req.id`. Put it near the top.
+
+## Tests
+
+```sh
+npm test
+```
+
+## License
+
+MIT

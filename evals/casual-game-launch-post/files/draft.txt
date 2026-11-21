@@ -1,0 +1,16 @@
+after 2.5 years of nights and weekends, the demo for my little game Lumenwick is finally live on Steam 🏮
+
+it's a cozy puzzle-adventure where you play a lamplighter in a city where the lights keep going out. every lantern you relight reveals a bit more of the map (and a bit more of the story of why the city went dark in the first place)
+
+some stuff I'm really proud of:
+- 25ish hand-designed light and shadow puzzles
+- an original soundtrack by my friend Jess, who is way too talented for this project
+- a cat who follows you around, is completely useless, and can be petted at any time
+
+this started as a weekend game jam project and I honestly never thought it would get this far. huge thanks to everyone who playtested early builds and told me (kindly) when the puzzles made zero sense
+
+the demo has about 45 minutes of content. if you try it I'd genuinely love to hear what you think, especially where you got stuck or confused
+
+wishlisting helps a TON for solo devs, so if it looks like your kind of thing it would mean the world 🙏
+
+link below 👇

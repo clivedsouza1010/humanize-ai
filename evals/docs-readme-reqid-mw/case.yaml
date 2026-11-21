@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: docs-readme-reqid-mw
+expected_outcome: |
+  final.txt is a rewrite of draft.txt (readme written by Claude) that the detectors read as human,
+  with every code block, command and API name unchanged, every fact kept and none added.
+context:
+  scaffold_script: place-files.sh

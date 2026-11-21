@@ -1,0 +1,9 @@
+Every backend team eventually hits the same wall: a job queue that was fine at 500 jobs a minute starts losing work at 50,000. In this talk I'll walk through how we moved a payments platform from a homegrown Redis-backed queue to a durable, partitioned log, without taking the system offline and without losing a single message.
+
+The first half covers why the old design broke. We'll look at retry logic that caused thundering herds, lock-based deduplication that became a bottleneck, and dead-letter handling that quietly buried errors for weeks. I'll show the graphs that convinced us a rewrite was worth the risk, and the one incident that made the case in a single afternoon.
+
+The second half is about the migration itself. We ran both systems side by side for nine weeks, using a dual-write shim that compared outcomes and flagged mismatches. I'll explain how we built the shim, why we chose idempotency keys over exactly-once guarantees, and the three bugs that shadow traffic caught and our unit tests missed.
+
+You'll leave with a checklist for planning a queue migration, a sample of the reconciliation job we used to find lost messages, and a clear sense of which parts of the work took longer than planned. Spoiler: it wasn't the code.
+
+Attendees should be comfortable with distributed systems basics. Familiarity with Kafka or a similar log will help but isn't required.
