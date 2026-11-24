@@ -40,7 +40,7 @@ bash ~/.claude/skills/humanize-ai/scripts/start-scorer.sh
 
 ## Starter examples
 
-You can start by asking Claude Code, for example "Does this README sound like AI?" or "Humanize the talk abstract in `abstract.txt`."
+You can ask Claude Code "Does this README sound like AI?", "Which docs in this repo sound AI-written?" or "Humanize the talk abstract in `abstract.txt`."
 
 To run the detector yourself, set two variables once per shell:
 
