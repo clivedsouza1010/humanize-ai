@@ -4,5 +4,5 @@ __pycache__/
 # retrain.py's scratch output: the fit that has not passed the gate
 bench/blend-candidate.json
 bench/metrics-candidate.md
-# the evals stay out of what installs; to run them: ln -s ../evals plugin/evals && claude plugin eval ./plugin
+# the evals stay out of what installs; `ln -sfn ../evals plugin/evals` lets `claude plugin eval` find them
 plugin/evals

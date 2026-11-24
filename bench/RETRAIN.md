@@ -1,6 +1,6 @@
 # Retraining
 
-Retrains run from a clone of the repo, never from a plugin install, and replace the detector in `plugin/skills/humanize-ai`. From the repo root:
+Retrains run from a clone of the repo and replace the detector in its `plugin/skills/humanize-ai`. A plugin install keeps its own copy, so to use the new detector, link the clone's skill as the README shows and uninstall the plugin. From the repo root:
 
 ```bash
 PY=~/.cache/humanize/venv/bin/python
@@ -29,6 +29,8 @@ Every version your own retrains replace is kept on this machine, with its metric
 $PY bench/retrain.py --history
 $PY bench/retrain.py --rollback VERSION   # one saved on this machine
 ```
+
+Versions saved before the plugin moved into its own folder are in `scripts/blend-history/`. Move them to `bench/blend-history/` to roll back to one.
 
 The rest is for whoever holds the training corpus and the held-out docs, which don't ship. Keeping the human side as recent as the AI side matters as much as new AI data. `bench/fetch_hn.py` tops up recent forum prose and `bench/fetch_wikipedia.py` tops up recent encyclopedic prose; neither needs a token or a label, and both should be run every few months.
 

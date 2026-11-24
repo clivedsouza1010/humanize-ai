@@ -66,7 +66,7 @@ For comparison, on the prose test split Binoculars alone gets 0.71 accuracy, and
 | paired docs | AI | 352 sections | Claude (Haiku, Sonnet, Opus) writing 126 of the same docs for the same projects as the human ones, no style guide |
 | labelled docs | AI | 38 sections | 11 docs whose author confirmed AI helped with all of them |
 
-Until 2026-11-15 the prose set also held 300 Yelp reviews. Yelp's dataset terms don't allow publishing results from them, so the prose detector was refit without them that day, and their rows and figures were taken out of this report. The prose figures at the top and in the list below are from the refit. The dated sections further down were measured with the reviews in the set. Every saved version before the refit was fitted on them too, so those were removed from `scripts/blend-history/`, and the rollbacks those sections name no longer exist.
+Until 2026-11-15 the prose set also held 300 Yelp reviews. Yelp's dataset terms don't allow publishing results from them, so the prose detector was refit without them that day, and their rows and figures were taken out of this report. The prose figures at the top and in the list below are from the refit. The dated sections further down were measured with the reviews in the set. Every saved version before the refit was fitted on them too, so those were removed from `bench/blend-history/`, and the rollbacks those sections name no longer exist.
 
 ### Limits, plainly
 

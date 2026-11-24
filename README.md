@@ -4,7 +4,7 @@ humanize-ai is a Claude Code skill that checks whether writing will read as AI-w
 
 ## What it is, and why it exists
 
-A single score from a detector can't tell you what to change, and the rewrite that brings it down is often worse to read. That is the gap humanize-ai was built for. Its detectors run on your machine and each flag comes with a reason. Its blind tests also shaped how the rewrites work. People rated score-chasing rewrites below plain ones, which is why a reader's view is the first test of a round and the score is the second.
+A single score from a detector can't tell you what to change, and the rewrite that brings it down is often worse to read. That is the gap humanize-ai was built for. Its detectors run on your machine and each flag comes with a reason. In its blind tests people rated score-chasing rewrites below plain ones, which is why a reader's view is the first test of a round and the score is the second.
 
 Use it on your own posts, docs and emails, where AI help is allowed, or to see where detectors go wrong. A rewrite does not change the rules of a school, employer, journal or event that bans AI help or asks for it to be disclosed.
 
@@ -26,18 +26,21 @@ claude plugin install humanize-ai --marketplace clivedsouza1010/humanize-ai
 
 Updates are manual: `claude plugin update humanize-ai@humanize-ai`.
 
-On first use, Claude runs `setup.sh` after telling you. Setup will make a Python environment in `~/.cache/humanize/venv`, install pinned packages and download three models, about 6.7 GB. It needs Python 3.11 or newer (`PYTHON` picks the interpreter) and works on Apple Silicon, an NVIDIA GPU or the CPU.
+On first use, Claude runs `setup.sh` after telling you. Setup will make a Python environment in `~/.cache/humanize/venv`, install pinned packages and download three models, about 6.7 GB. It needs Python 3.11 or newer and works on Apple Silicon, an NVIDIA GPU or the CPU.
 
 Then Claude starts the scorer, which keeps the models loaded on `127.0.0.1:8765` so a check takes under a second instead of about 15. It stops when idle for 15 minutes. Each run's draft and rewrite are kept in `~/.cache/humanize/data/runs.jsonl`.
 
-To work on humanize-ai, clone it and link the skill:
+To work on humanize-ai, clone it instead and link the skill:
 
 ```bash
 git clone https://github.com/clivedsouza1010/humanize-ai ~/humanize-ai
 mkdir -p ~/.claude/skills
 ln -s ~/humanize-ai/plugin/skills/humanize-ai ~/.claude/skills/
 bash ~/.claude/skills/humanize-ai/scripts/setup.sh
+bash ~/.claude/skills/humanize-ai/scripts/start-scorer.sh
 ```
+
+Already cloned into `~/.claude/skills`? Move that folder to `~/humanize-ai` and pull.
 
 ## Starter examples
 
@@ -87,7 +90,7 @@ There is one fixed rule: the detector must never be trained on its own verdicts,
 
 ## Code of conduct
 
-This project follows the [Contributor Covenant 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). Report problems to the maintainer privately, not in a public issue.
+This project follows the [Contributor Covenant 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). Report problems to the maintainer privately.
 
 ## License
 

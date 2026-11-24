@@ -98,7 +98,7 @@ $PY $D --scan ~/dev/my-repo --out scan.json
 
 It prints one line per file and writes every full result to `scan.json`.
 
-When reporting to the user, give the probability, the verdict, the percentile and the flagged sentences with their reasons. For a document, give `ai_share` and a line per section that isn't `human`. Say plainly that it's a statistical guess, not proof of authorship. The current detector's measured accuracy is in `references/metrics.md` (rewritten on every retrain), and what those numbers mean and where they fall short is in [REPORT.md](https://github.com/clivedsouza1010/humanize-ai/blob/main/bench/REPORT.md) in the repo. Quote from those, not from memory.
+When reporting to the user, give the probability, the verdict, the percentile and the flagged sentences with their reasons. For a document, give `ai_share` and a line per section that isn't `human`. Say plainly that it's a statistical guess, not proof of authorship. The current detector's measured accuracy is in `references/metrics.md` (rewritten on every retrain in a clone), and what those numbers mean and where they fall short is in [REPORT.md](https://github.com/clivedsouza1010/humanize-ai/blob/main/bench/REPORT.md) in the repo. Quote from those, not from memory.
 
 ## Humanize
 
@@ -152,7 +152,7 @@ $PY $R add --draft draft.md --rewrite final.md --genre docs \
   --moves "fresh write, split the list, cut the hedges"
 ```
 
-A run is evidence, not a label. The draft has an author only the user can state, and the rewrite was written by this skill, so neither reaches the detector except through `label.py`. `record.py` cannot write to the label store at all, and `record_test.py` holds that open.
+A run is evidence, not a label. The draft has an author only the user can state, and the rewrite was written by this skill, so neither reaches the detector except through `label.py`. `record.py` cannot write to the label store at all, and the repo's `tests/record_test.py` holds that open.
 
 ## Technical docs (READMEs, guides, API pages)
 
@@ -202,7 +202,7 @@ $PY $L list
 - Only label what the user states. Don't guess from the score, and never label a humanized rewrite as human.
 - A wrong label can be taken back with `$PY $L remove ID`.
 
-Labels only change the detector at a retrain, which runs from a clone of the repo and needs the training corpus in `~/.cache/humanize/data`. The corpus doesn't ship, and without it the labels stay saved until it's there. When the user wants to retrain, follow `bench/RETRAIN.md` in their clone.
+Labels only change the detector at a retrain, which runs from a clone of the repo and needs the training corpus in `~/.cache/humanize/data`. The corpus doesn't ship, and without it the labels stay saved until it's there. When the user wants to retrain, follow `bench/RETRAIN.md` in their clone. A retrain changes only the clone, so a plugin install keeps its old detector until the clone's skill is linked into `~/.claude/skills` and the plugin is uninstalled.
 
 A handful of labels moves the numbers very little next to the 4,000 sections it trains on (about 3 labels in 10 are held back for testing instead). That's on purpose: one mislabelled file shouldn't swing the detector. Tell the user that labels pay off in bulk, that the clearest wins come from texts the detector currently gets wrong, and that for docs the most useful label of all is recent human writing, because the human docs here stop in mid-2024.
 
@@ -215,7 +215,7 @@ $PY ${CLAUDE_SKILL_DIR}/scripts/record.py queue   # drafts whose author only the
 $PY ${CLAUDE_SKILL_DIR}/scripts/record.py stats   # score drift, which is how staleness shows up
 ```
 
-`queue` is the bridge between a run and a label. It shows the draft, never the rewrite, because the rewrite's author is this skill and labelling it human is the one move that would teach the detector to agree with itself. When the user says who wrote one of those drafts, label it and the normal gate applies.
+`queue` is the bridge between a run and a label. It shows the draft, never the rewrite, because the rewrite's author is this skill and labelling it human is the one move that would teach the detector to agree with itself. When the user says who wrote one of those drafts, label it and the gate in the repo's `bench/RETRAIN.md` applies.
 
 `stats` splits each genre's runs into older and newer halves and compares the median score of the drafts coming in. A drop means incoming drafts now score far lower than they used to, which is what a stale detector looks like: the voice it was fit on has moved on, and the fix is new AI data and a retrain, not a lower bar. A rise means either the drafts really are more machine-like or the detector has grown trigger-happy, so check false alarms on known human text with the repo's `bench/holdouts.py` (it needs the held-out docs) before trusting it. Below six runs in a genre it says so and reports nothing, because a handful of runs is not a trend.
 
