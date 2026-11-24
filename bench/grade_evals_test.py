@@ -15,12 +15,12 @@ import grade_evals as G  # noqa: E402
 
 DOCS_CASE = "docs-api-shapeparse-parse"
 PROSE_CASE = "reddit-loan-advice"
-DOCS_DRAFT = open(os.path.join(G.SKILL_DIR, "evals", DOCS_CASE, "files", "draft.txt")).read()
-PROSE_DRAFT = open(os.path.join(G.SKILL_DIR, "evals", PROSE_CASE, "files", "draft.txt")).read()
+DOCS_DRAFT = open(os.path.join(G.REPO, "evals", DOCS_CASE, "files", "draft.txt")).read()
+PROSE_DRAFT = open(os.path.join(G.REPO, "evals", PROSE_CASE, "files", "draft.txt")).read()
 LINKED_CASE = "docs-guide-nimblet"
 # directories only: a .DS_Store in evals/ (which .gitignore expects) would otherwise crash the guard tests
-CASES = sorted(os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(G.SKILL_DIR, "evals", "*", "")))
-LINKED_DRAFT = open(os.path.join(G.SKILL_DIR, "evals", LINKED_CASE, "files", "draft.txt")).read()
+CASES = sorted(os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(G.REPO, "evals", "*", "")))
+LINKED_DRAFT = open(os.path.join(G.REPO, "evals", LINKED_CASE, "files", "draft.txt")).read()
 
 
 def padded(draft, target):
@@ -143,7 +143,7 @@ def second_opinion(grading):
 
 
 def test_a_docs_rewrite_is_not_judged_on_the_second_opinion():
-    # bench/metrics.md puts it below chance on docs, so a doc over the cut has shown nothing
+    # references/metrics.md puts it below chance on docs, so a doc over the cut has shown nothing
     grading = grade_one(DOCS_CASE, DOCS_DRAFT, roberta=0.99)
     assert second_opinion(grading) == [], grading["expectations"]
     assert grading["summary"]["failed"] == 0, grading["expectations"]
@@ -174,8 +174,8 @@ def test_each_genre_gets_the_checks_its_graders_describe():
     # Every case, because the drift this fixed was partly per case: one docs case missing a grader file
     # would pass a loop over two named cases.
     for case in CASES:
-        draft = open(os.path.join(G.SKILL_DIR, "evals", case, "files", "draft.txt")).read()
-        graders = len(glob.glob(os.path.join(G.SKILL_DIR, "evals", case, "graders", "*.md")))
+        draft = open(os.path.join(G.REPO, "evals", case, "files", "draft.txt")).read()
+        graders = len(glob.glob(os.path.join(G.REPO, "evals", case, "graders", "*.md")))
         checks = grade_one(case, draft)["summary"]["total"]
         assert checks == graders, f"{case}: {checks} checks against {graders} grader files"
     # and the totals themselves, so both sides moving together still needs a deliberate edit here
@@ -184,14 +184,14 @@ def test_each_genre_gets_the_checks_its_graders_describe():
 
 
 def grader(case, name):
-    return open(os.path.join(G.SKILL_DIR, "evals", case, "graders", name)).read()
+    return open(os.path.join(G.REPO, "evals", case, "graders", name)).read()
 
 
 def test_every_threshold_a_check_uses_is_the_one_its_grader_states():
     # The count guard compares how many, not what they say: grader 08 could say 0.25 against a code bound of
     # 0.22 and still pass it. Each number that appears in a check has to appear in that check's grader file.
     for case in CASES:
-        draft = open(os.path.join(G.SKILL_DIR, "evals", case, "files", "draft.txt")).read()
+        draft = open(os.path.join(G.REPO, "evals", case, "files", "draft.txt")).read()
         low, high = G.length_bounds(G.case_genre(case, draft))
         assert f"{low}x and {high}x" in grader(case, "05-length-close.md"), case
         assert f"under {G.MAX_VOICE_DRIFT}" in grader(case, "08-voice-close-to-draft.md"), case

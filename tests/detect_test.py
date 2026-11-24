@@ -12,7 +12,8 @@ import threading
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+SCRIPTS = os.path.join(HERE, "..", "plugin", "skills", "humanize-ai", "scripts")
+sys.path.insert(0, SCRIPTS)
 import detect as D  # noqa: E402
 
 POOLED = {"threshold_ai": 0.5, "threshold_human": 0.315, "human_reference": [0.0, 0.5, 1.0],
@@ -62,7 +63,7 @@ def with_second_opinion(sections):
 
 
 def test_the_second_opinion_is_read_off_the_sections_that_decide():
-    # bench/metrics.md measures this detector per text; the document value used to be a max over every
+    # references/metrics.md measures this detector per text; the document value used to be a max over every
     # section, so one section too short to carry a verdict could set the number for the whole document
     result = with_second_opinion([COUNTS, SHORT])
     assert result["document"] and len(result["sections"]) == 2, result
@@ -357,7 +358,7 @@ def test_the_running_scorer_answers_its_client_and_refuses_a_page():
 
 
 def test_setup_downloads_the_model_versions_detect_loads():
-    setup = open(os.path.join(HERE, "setup.sh")).read()
+    setup = open(os.path.join(SCRIPTS, "setup.sh")).read()
     pinned = dict(re.findall(r'\("([\w./-]+)", "([0-9a-f]{40})"\)', setup))
     assert pinned == D.REVISIONS, pinned
     assert "revision=revision" in setup
@@ -445,7 +446,7 @@ def test_setup_refuses_an_old_python_and_rebuilds_an_old_venv():
     import shlex
     import shutil
     import subprocess
-    setup = os.path.join(HERE, "setup.sh")
+    setup = os.path.join(SCRIPTS, "setup.sh")
     real = shlex.quote(sys.executable)
     with tempfile.TemporaryDirectory() as home:
         tools = os.path.join(home, "tools")
@@ -560,7 +561,7 @@ def test_start_scorer_will_not_take_another_apps_port_for_the_scorer():
         threading.Thread(target=server.serve_forever, daemon=True).start()
         env = {k: v for k, v in os.environ.items() if k.lower() != "no_proxy"}
         try:
-            done = subprocess.run(["bash", os.path.join(HERE, "start-scorer.sh")], capture_output=True, text=True, timeout=30,
+            done = subprocess.run(["bash", os.path.join(SCRIPTS, "start-scorer.sh")], capture_output=True, text=True, timeout=30,
                                   env=env | {"HUMANIZE_PORT": str(server.server_address[1]), "http_proxy": via, "HTTP_PROXY": via})
         finally:
             server.shutdown()

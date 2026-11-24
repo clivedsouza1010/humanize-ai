@@ -17,17 +17,18 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SKILL = os.path.dirname(HERE)
+SKILL = os.path.join(os.path.dirname(HERE), "plugin", "skills", "humanize-ai")
+SCRIPTS = os.path.join(SKILL, "scripts")
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(SKILL, "bench"))
+sys.path.insert(0, SCRIPTS)
 import fit as F  # noqa: E402
 from holdouts import human_holdout, rates  # noqa: E402
 from detect import MIN_VERDICT_WORDS  # noqa: E402
 
 DATA = os.path.expanduser("~/.cache/humanize/data")
-BLEND = os.path.join(HERE, "blend.json")
+BLEND = os.path.join(SCRIPTS, "blend.json")
 CANDIDATE = os.path.join(HERE, "blend-candidate.json")
-METRICS = os.path.join(SKILL, "bench", "metrics.md")
+METRICS = os.path.join(SKILL, "references", "metrics.md")
 HISTORY = os.path.join(HERE, "blend-history")
 LOG = os.path.join(HISTORY, "log.jsonl")
 # the training corpus is the maintainer's own and isn't shipped with the skill
@@ -158,7 +159,7 @@ def holdout_rates(blends, items):
 
 def merged_metrics(promoted, kept):
     # fit.py writes a header and then one '## ' block per genre, in GENRES order
-    head, *blocks = re.split(r"(?m)^(?=## )", open(os.path.join(SKILL, "bench", "metrics-candidate.md")).read())
+    head, *blocks = re.split(r"(?m)^(?=## )", open(os.path.join(HERE, "metrics-candidate.md")).read())
     fresh = dict(zip(F.GENRES, blocks))
     if not kept:
         return head + "".join(fresh.values())
@@ -230,14 +231,14 @@ def main():
     dataset, features, previous = (os.path.join(DATA, n) for n in ("dataset.jsonl", "features.jsonl", "features-prev.jsonl"))
     # the batch step may load the models, so free the scorer's copy first; it restarts on next use
     subprocess.run(["pkill", "-f", "detect.py --serve"])
-    subprocess.run([py, os.path.join(SKILL, "bench", "build_set.py"), DATA, dataset], check=True)
+    subprocess.run([py, os.path.join(HERE, "build_set.py"), DATA, dataset], check=True)
     # features.jsonl is this script's own output; a first run has none and scores every row
     if os.path.exists(features):
         shutil.copy(features, previous)
     reuse = ["--reuse", previous] if os.path.exists(previous) else []
-    subprocess.run([py, os.path.join(HERE, "detect.py"), "--batch", dataset, "--out", features, *reuse], check=True)
-    candidate_metrics = os.path.join(SKILL, "bench", "metrics-candidate.md")
-    subprocess.run([py, os.path.join(SKILL, "bench", "fit.py"), features, CANDIDATE, candidate_metrics], check=True, stdout=subprocess.DEVNULL)
+    subprocess.run([py, os.path.join(SCRIPTS, "detect.py"), "--batch", dataset, "--out", features, *reuse], check=True)
+    candidate_metrics = os.path.join(HERE, "metrics-candidate.md")
+    subprocess.run([py, os.path.join(HERE, "fit.py"), features, CANDIDATE, candidate_metrics], check=True, stdout=subprocess.DEVNULL)
 
     rows = [json.loads(line) for line in open(features)]
     current, candidate = json.load(open(BLEND)), json.load(open(CANDIDATE))

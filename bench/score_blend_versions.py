@@ -5,14 +5,14 @@
 import json, os, sys
 import numpy as np
 BENCH = os.path.dirname(os.path.abspath(__file__))
-SCRIPTS = os.path.join(os.path.dirname(BENCH), "scripts")
+SCRIPTS = os.path.join(os.path.dirname(BENCH), "plugin", "skills", "humanize-ai", "scripts")
 sys.path.insert(0, BENCH)
 sys.path.insert(0, SCRIPTS)
 from build_set import doc_rows
 from detect import MIN_VERDICT_WORDS, canon, link_excess, voice_score, voice_terms
 
 D = os.path.expanduser("~/.cache/humanize/data/github")
-HIST = os.path.join(SCRIPTS, "blend-history")
+HIST = os.path.join(BENCH, "blend-history")
 BLEND = os.path.join(SCRIPTS, "blend.json")
 read = lambda n: [json.loads(l) for l in open(os.path.join(D, n))]
 

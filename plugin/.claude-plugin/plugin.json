@@ -8,6 +8,5 @@
   "homepage": "https://github.com/clivedsouza1010/humanize-ai",
   "repository": "https://github.com/clivedsouza1010/humanize-ai",
   "license": "MIT",
-  "keywords": ["writing", "ai-detection", "rewrite", "docs"],
-  "skills": ["./"]
+  "keywords": ["writing", "ai-detection", "rewrite", "docs"]
 }

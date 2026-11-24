@@ -35,7 +35,7 @@ Read these fields:
 - `ai_probability` and `verdict`: the fitted blend of every signal. `verdict` is `ai` (at the cut or above), `human` (under the bar the rewrite loop aims for) or `unclear` (in between). The cut is 0.5 unless you pass `--register`.
 - `verdict: known text`: the models predict almost every word, so it's a widely published text (a licence, the Contributor Covenant, a famous quote) or text that repeats itself. That says nothing about who wrote it. Tell the user that, not "AI".
 - `more_ai_like_than_human_samples`: where the text sits among the human texts the blend was checked on. "95%" means it reads more AI-like than 95% of them.
-- `heldout_roberta`: a separately trained detector (fakespot RoBERTa), 0 to 1. A second opinion on prose, and nothing on docs. `bench/metrics.md` scores it on every fit, and the two genres are not close: on prose AUROC 0.790, catching 64% of AI text at 16% of human text flagged; on docs AUROC **0.345**, which is below chance, flagging 16% of known-human docs while catching 9% of the AI ones. So a high reading on a doc is weak evidence it was written by a person, and one register is worse still: on 20 OWASP security cheat sheets written before any AI policy existed it flagged 15, median 0.956. A document's number is the highest of the sections that decide its verdict, so it also climbs with length: of known-human docs, 4% of single-section ones reach 0.5 against 64% of those with five sections or more.
+- `heldout_roberta`: a separately trained detector (fakespot RoBERTa), 0 to 1. A second opinion on prose, and nothing on docs. `references/metrics.md` scores it on every fit, and the two genres are not close: on prose AUROC 0.790, catching 64% of AI text at 16% of human text flagged; on docs AUROC **0.345**, which is below chance, flagging 16% of known-human docs while catching 9% of the AI ones. So a high reading on a doc is weak evidence it was written by a person, and one register is worse still: on 20 OWASP security cheat sheets written before any AI policy existed it flagged 15, median 0.956. A document's number is the highest of the sections that decide its verdict, so it also climbs with length: of known-human docs, 4% of single-section ones reach 0.5 against 64% of those with five sections or more.
 - `sentences[].flags`: why each sentence looks AI. This is what you rewrite against.
 - `sentences[].habits`: patterns like colons, em dashes or "However," openers that, in this genre's training data, people use as much as models do. Shown for interest; don't rewrite for them.
 - `sentences[].recalled`: the sentence is quoted or standard wording (no AI training sentence scores that predictable), so it carries no flags.
@@ -98,7 +98,7 @@ $PY $D --scan ~/dev/my-repo --out scan.json
 
 It prints one line per file and writes every full result to `scan.json`.
 
-When reporting to the user, give the probability, the verdict, the percentile and the flagged sentences with their reasons. For a document, give `ai_share` and a line per section that isn't `human`. Say plainly that it's a statistical guess, not proof of authorship. The current detector's measured accuracy is in `bench/metrics.md` (rewritten on every retrain), and what those numbers mean and where they fall short is in `bench/REPORT.md`. Quote from those, not from memory.
+When reporting to the user, give the probability, the verdict, the percentile and the flagged sentences with their reasons. For a document, give `ai_share` and a line per section that isn't `human`. Say plainly that it's a statistical guess, not proof of authorship. The current detector's measured accuracy is in `references/metrics.md` (rewritten on every retrain in a clone), and what those numbers mean and where they fall short is in [REPORT.md](https://github.com/clivedsouza1010/humanize-ai/blob/main/bench/REPORT.md) in the repo. Quote from those, not from memory.
 
 ## Humanize
 
@@ -125,7 +125,7 @@ Work in a scratch folder. Keep the original as `r0.txt` and never edit it.
    - outside docs, `heldout_roberta` is under 0.5. That includes `both`: the inversion below was measured on the docs corpus and a `both` document is prose with headings. Not for docs: it is below chance there, so the check fails long human docs and waves AI ones through. The number is still worth reading and reporting, just not worth passing or failing a round on.
    - nothing real is listed under `missing`, and nothing you made up is under `added`. Read both lists rather than treating any entry as a failure: the check sometimes lists an ordinary word that starts a sentence.
    - `length_ratio` is between 0.7 and 1.3
-   - no hidden characters, look-alike letters or deliberate misspellings. Words already in the draft and capitalised words don't count; of the rest, `bench/grade_evals.py` allows one per 100 words of the rewrite, and always at least one, because a rewrite in someone's own vocabulary trips a spellcheck honestly.
+   - no hidden characters, look-alike letters or deliberate misspellings. Words already in the draft and capitalised words don't count; of the rest, the repo's `bench/grade_evals.py` allows one per 100 words of the rewrite, and always at least one, because a rewrite in someone's own vocabulary trips a spellcheck honestly.
    - `code_blocks_changed` and `code_blocks_added` are both 0, in every genre. `--compare` leaves whatever sits inside a code block out of `missing` and `added`, so this is the only check on what a block says. A prose draft can't hold a fenced block, so in prose it fires when the rewrite adds one, or touches an indented passage at all, such as a quoted address: keep those exactly as they are.
    - for docs and `both`, `links_added` isn't there, and `length_ratio` is between 0.85 and 1.15. Both rules cover `both` because half of a `both` verdict is the docs blend: padding is what moves it, and the link credit is part of it.
    - `voice_drift` is under 0.22, and a round with no `voice_drift` reported has not passed it: `--compare` leaves the field out when `scripts/blend.json` carries no docs ngram table, and a rollback can do that. That is a guardrail on the runaway tail, not a target: no round that ever passed went above 0.214, and the price of score halves past 0.15. A low number is not a good sign on its own — see below.
@@ -139,7 +139,7 @@ Give the user the final text, then a short table:
 | round | AI probability | verdict | RoBERTa | flagged sentences | facts kept |
 |---|---|---|---|---|---|
 
-Be straight about what a pass means. It passed these detectors. Turnitin, GPTZero and Grammarly are trained differently and can disagree, and `bench/REPORT.md` shows this blend catches much less AI text from model families it wasn't fitted on. A pass here says nothing about other detectors, so don't suggest it does.
+Be straight about what a pass means. It passed these detectors. Turnitin, GPTZero and Grammarly are trained differently and can disagree, and the repo's `bench/REPORT.md` shows this blend catches much less AI text from model families it wasn't fitted on. A pass here says nothing about other detectors, so don't suggest it does.
 
 A docs verdict needs the same care. The docs detector reads the voice coding agents have had since about the start of 2026. It misses most AI docs from 2025 and could miss the next model's. On 2024-26 docs from projects that ban AI it calls about 1 doc in 8 AI, so a terse or heavily copy-edited human doc can get flagged. Say so when you report one.
 
@@ -152,7 +152,7 @@ $PY $R add --draft draft.md --rewrite final.md --genre docs \
   --moves "fresh write, split the list, cut the hedges"
 ```
 
-A run is evidence, not a label. The draft has an author only the user can state, and the rewrite was written by this skill, so neither reaches the detector except through `label.py`. `record.py` cannot write to the label store at all, and `record_test.py` holds that open.
+A run is evidence, not a label. The draft has an author only the user can state, and the rewrite was written by this skill, so neither reaches the detector except through `label.py`. `record.py` cannot write to the label store at all, and the repo's `tests/record_test.py` holds that open.
 
 ## Technical docs (READMEs, guides, API pages)
 
@@ -202,50 +202,9 @@ $PY $L list
 - Only label what the user states. Don't guess from the score, and never label a humanized rewrite as human.
 - A wrong label can be taken back with `$PY $L remove ID`.
 
-Then retrain:
-
-```bash
-$PY ${CLAUDE_SKILL_DIR}/scripts/retrain.py
-```
-
-Retraining needs the training corpus in `~/.cache/humanize/data`, which isn't shipped with the skill. Without it `retrain.py` stops and names the missing files, and the labels stay saved for when the corpus is there.
-
-The detector records which labels it has learned from as salted hashes, so `blend.json` can't be matched to the labelled texts. The salt is `~/.cache/humanize/label-salt` and never leaves the machine. Keep it with `~/.cache/humanize/data` if you move machines. Without it every label counts as new, so a genre with nothing new gets refit and judged again until a promotion records the new salt.
-
-It rebuilds the data and fits a candidate. Then, for each genre that has new labels or a new dataset, it fits the old and new setups on the same 20 random splits and scores them on the same held-out texts. A genre with nothing new stays exactly as it is. A genre's detector is replaced only if, on average, AUROC doesn't drop more than 0.005, false alarms on human text don't rise more than 1 point, AI caught doesn't drop more than 2 points, it doesn't do worse on the new data, no new source's own human rows flag more than 3 points above the rate on everything else, and — for `docs` — it doesn't call more than 1 point more of the held-out human docs AI.
-
-The fifth is the only one that's a property of the batch rather than a comparison, so it reads the same way every run until someone acts on it. The first four can clear with more data. A source with fewer than 250 human rows long enough to score is printed as too thin to judge, and is not judged.
-
-The sixth is the only one read on text outside the split: the ban-policy docs and the pre-policy project snapshots that `bench/holdouts.py` reports, scored on the blend that would actually ship. It exists because the second check cannot see what it is for — that figure is pooled over thousands of pre-2023 docs, so a few hundred recent ones cannot move it however badly they go. Measured across the saved versions with `bench/score_blend_versions.py`, five promotions in a row left the held-out rate at 0.091 and then two on 2026-11-11 took it to 0.105 and 0.127, while the pooled figure went 0.006 to 0.007. Both would now be refused, which is the point: the trade is real and it should be yours to make with `--force` rather than one the gate makes quietly. Under 100 held-out docs it says so and does not judge.
-
-If the gate keeps the current detector, the labels stay saved. Show the user the table it prints and let them choose: catching more text like theirs at the cost of more false alarms is their call. To accept it:
-
-```bash
-$PY ${CLAUDE_SKILL_DIR}/scripts/retrain.py --force docs --note "accepted the false alarms to catch more of my own docs"
-```
-
-Every version your own retrains replace is kept on this machine, with its metrics. `--history` also lists the maintainer's earlier versions, which don't ship, so only the ones saved here can be rolled back to:
-
-```bash
-$PY ${CLAUDE_SKILL_DIR}/scripts/retrain.py --history
-$PY ${CLAUDE_SKILL_DIR}/scripts/retrain.py --rollback VERSION   # one saved on this machine
-```
+Labels only change the detector at a retrain, which runs from a clone of the repo and needs the training corpus in `~/.cache/humanize/data`. The corpus doesn't ship, and without it the labels stay saved until it's there. When the user wants to retrain, follow `bench/RETRAIN.md` in their clone. A retrain changes only the clone, so a plugin install keeps its old detector until the clone's skill is linked into `~/.claude/skills` and the plugin is uninstalled.
 
 A handful of labels moves the numbers very little next to the 4,000 sections it trains on (about 3 labels in 10 are held back for testing instead). That's on purpose: one mislabelled file shouldn't swing the detector. Tell the user that labels pay off in bulk, that the clearest wins come from texts the detector currently gets wrong, and that for docs the most useful label of all is recent human writing, because the human docs here stop in mid-2024.
-
-The next few paragraphs, up to the run store, are for whoever holds the training corpus and the held-out docs, which don't ship. Keeping the human side as recent as the AI side matters as much as new AI data. `bench/fetch_hn.py` tops up recent forum prose and `bench/fetch_wikipedia.py` tops up recent encyclopedic prose; neither needs a token or a label, and both should be run every few months.
-
-For **docs**, recency is the hard one, because a date window is not provenance: writing since 2023 is exactly where AI help is most common. The only route that holds up is projects that publicly **ban** AI contributions, taking the docs they gained after the ban took effect. A **disclosure** rule is not provenance and must not be used this way: it permits AI, so the window is mostly AI prose. Measured on 2026-11-11, docs from ban projects flag as AI 1.8% and 10.9% of the time in two independent batches, while docs from disclosure projects flag 44.6% and 77.3% of the time against 77.5% for a corpus of self-declared AI PRs. Run `bench/holdouts.py` rather than trusting the numbers written here: they moved to 3.6% and 12.8% that day under two promotions and back again when those were rolled back, and the gate's own false-alarm check saw almost none of it. That is what the sixth check is for. Read the holdout's ban line as the false-alarm number; its disclosure line is a mixture, not a human rate. `~/.cache/humanize/data/github/policies.json` holds the 25 projects behind the holdout and `policies-train.json` the 17 added later, each with the verbatim policy quote, its URL, and the date the clause was demonstrably present by. Neither trains: `bench/holdouts.py` reads both. Both files also keep every rejection, which is the more useful half: 421 of 439 candidates failed. Before adding a project, check the four things that did the rejecting — docs that are prose markdown rather than `.rst`, `.adoc` or generated reference; a real ban rather than "review what you submit" (a must-disclose rule can be recorded, but never used as human provenance); no `AGENTS.md`, `CLAUDE.md`, `.cursor/rules` or Copilot instructions in the repo, because a project that runs on agents cannot vouch for its own docs; and few AI trailers on docs commits since the policy. Watch for the trap in the last one: a policy that forbids AI trailers makes its own docs unverifiable, so a zero count there proves nothing and the PR bodies have to be read instead. `bench/provenance.py` does that reading — a merged pull request's trailers, checkboxes and AI-usage section, giving `ai`, `human` or `unknown`, with `fetch_github_docs.py pr` collecting the docs those pull requests wrote. It is accurate (against an independent reader on 363 pull requests from 21 projects it agrees on 359, and every verdict it issues matches) and it is still not a way to get human docs: 4,779 merged pull requests gave 1,455 AI declarations and 491 human ones, and once a label is only allowed to cover a file the pull request wrote nearly all of, 41 AI docs and 1 human doc survive. Those are held back as well, and `holdouts.py` pairs each project against its own docs from the day its policy took effect, because a project's pre-policy flag rate runs from 0.000 to 0.417 and one pooled number hides that completely. Err late on the date — too early pulls pre-policy docs onto the human side, too late only costs rows.
-
-Watch the register whenever a human source lands. The first HN run added 520 short forum comments and the gate refused them, and the damage turned out to sit in **one** register: declarative third-person reportage went from 35% to 42% flagged while every other human register stayed put or improved. REPORT.md has that round in full, including the per-register table the pooled false-alarm number hides.
-
-Three things that round taught, worth checking before any new human source lands:
-
-- **A filter that removes something both labels do is worse than no filter.** It turns that thing into an AI cue. Two filters in the Wikipedia fetcher failed this way before anyone noticed: one dropped every sentence with a copula plus an article, the other dropped any paragraph that quoted twice. Both read as format filters and both were style filters. Look at the drop counts, not at a green test suite.
-- **Check who actually wrote the text, not who saved it.** A diff cell for a partly edited line holds the whole line, so "added by" is not "written by" unless the line is wholly new.
-- **A contaminated batch is checked for now, but the check is narrow.** The gate refuses a new source whose own human rows flag more than 3 points above the rate on everything else, measured per source and only once the source has 250 scorable human rows. It catches roughly 7% mislabelled AI text in a 300-row prose batch and about 1% in a docs batch, because the docs detector keeps flagging the mislabelled rows even after training on them while the prose one absorbs them. Four things it can't do: it can't tell a mislabelled batch from a register the detector reads badly, so it refuses both and leaves the call to you; it's blind to contamination made of default-voice Claude prose, which the prose detector caught only 59% of the time in the 2026-11-10 contamination runs (REPORT.md, "The contamination check"); it reads one rate per source, so a bad register inside a mixed source still averages away; and hand-labelled rows all share the source name `feedback`, so that channel can't reach the row floor and is never judged. The old advice still holds for everything the check can't see: read `new_human_flagged` and the per-source rates in the output yourself.
-
-`bench/REPORT.md` says how the data was built and what the numbers mean, and `bench/metrics.md` holds the numbers from the last fit.
 
 ### What the run store is for
 
@@ -256,8 +215,8 @@ $PY ${CLAUDE_SKILL_DIR}/scripts/record.py queue   # drafts whose author only the
 $PY ${CLAUDE_SKILL_DIR}/scripts/record.py stats   # score drift, which is how staleness shows up
 ```
 
-`queue` is the bridge between a run and a label. It shows the draft, never the rewrite, because the rewrite's author is this skill and labelling it human is the one move that would teach the detector to agree with itself. When the user says who wrote one of those drafts, label it and the normal gate applies.
+`queue` is the bridge between a run and a label. It shows the draft, never the rewrite, because the rewrite's author is this skill and labelling it human is the one move that would teach the detector to agree with itself. When the user says who wrote one of those drafts, label it and the gate in the repo's `bench/RETRAIN.md` applies.
 
-`stats` splits each genre's runs into older and newer halves and compares the median score of the drafts coming in. A drop means incoming drafts now score far lower than they used to, which is what a stale detector looks like: the voice it was fit on has moved on, and the fix is new AI data and a retrain, not a lower bar. A rise means either the drafts really are more machine-like or the detector has grown trigger-happy, so check false alarms on known human text with `bench/holdouts.py` (it needs the held-out docs) before trusting it. Below six runs in a genre it says so and reports nothing, because a handful of runs is not a trend.
+`stats` splits each genre's runs into older and newer halves and compares the median score of the drafts coming in. A drop means incoming drafts now score far lower than they used to, which is what a stale detector looks like: the voice it was fit on has moved on, and the fix is new AI data and a retrain, not a lower bar. A rise means either the drafts really are more machine-like or the detector has grown trigger-happy, so check false alarms on known human text with the repo's `bench/holdouts.py` (it needs the held-out docs) before trusting it. Below six runs in a genre it says so and reports nothing, because a handful of runs is not a trend.
 
 The store never feeds training. That is the whole point of keeping it separate.

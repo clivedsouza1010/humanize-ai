@@ -9,7 +9,7 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
+sys.path.insert(0, os.path.join(HERE, "..", "plugin", "skills", "humanize-ai", "scripts"))
 from detect import WORD, doc_prose  # noqa: E402
 
 # the doc types the wild AI set is short of

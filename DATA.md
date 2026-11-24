@@ -4,7 +4,7 @@ This repo's code is under the MIT licence in [LICENSE](LICENSE). That licence co
 
 ## Models
 
-`scripts/setup.sh` downloads three models from Hugging Face onto your machine. None of them ship in this repo. Each one is pinned to a commit.
+`plugin/skills/humanize-ai/scripts/setup.sh` downloads three models from Hugging Face onto your machine. None of them ship in this repo. Each one is pinned to a commit.
 
 | model | licence | commit |
 |---|---|---|
@@ -16,9 +16,9 @@ This repo's code is under the MIT licence in [LICENSE](LICENSE). That licence co
 
 No dataset is redistributed here. There are short quotes in `bench/REPORT.md`, and `bench/provenance_test.py` copies a few pull-request template lines from the projects it names. Apart from those, no text from these sources is in the repo. What does ship was fitted on that text:
 
-- `scripts/blend.json`, and any versions `retrain.py` saves in `scripts/blend-history/`: logistic coefficients, function-word n-gram weights, cut-offs per register and percentile tables of scores.
-- `scripts/words.txt`: every lowercase word seen three or more times across the training rows, leaving out labelled texts. The facts check in `--compare` uses it.
-- `bench/metrics.md`, `bench/REPORT.md` and `SKILL.md`: accuracy figures per source, and a few short quotes for commentary.
+- `blend.json`, and any versions `retrain.py` saves in `bench/blend-history/`: logistic coefficients, function-word n-gram weights, cut-offs per register and percentile tables of scores.
+- `words.txt`: every lowercase word seen three or more times across the training rows, leaving out labelled texts. The facts check in `--compare` uses it.
+- `metrics.md`, `bench/REPORT.md`, `bench/RETRAIN.md` and `SKILL.md`: accuracy figures per source, and a few short quotes for commentary.
 
 ## Training data
 

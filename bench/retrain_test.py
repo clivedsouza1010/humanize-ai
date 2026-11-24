@@ -10,7 +10,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import retrain as R  # noqa: E402
-import fit as F  # noqa: E402  (retrain puts bench/ on the path, so it has to come first)
+import fit as F  # noqa: E402
 
 
 def source(flagged, humans):
