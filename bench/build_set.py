@@ -11,7 +11,7 @@ import sys
 import pyarrow.parquet as pq
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
+sys.path.insert(0, os.path.join(HERE, "..", "plugin", "skills", "humanize-ai", "scripts"))
 from detect import MIN_VERDICT_WORDS, WORD, canon, doc_prose, doc_sections, external_link_rate, prepare, split_sentences  # noqa: E402
 from fetch_github_docs import doc_type  # noqa: E402
 
@@ -202,7 +202,7 @@ def main():
         path = os.path.join(data_dir, "github", name)
         if os.path.exists(path):
             rows += github_rows(path, label, source)
-    # texts whose author the user confirmed with scripts/label.py
+    # texts whose author the user confirmed with label.py
     feedback = os.path.join(data_dir, "feedback.jsonl")
     if os.path.exists(feedback):
         for line in open(feedback):
@@ -280,7 +280,7 @@ def main():
         # only words written in lowercase, so names never make the list
         for word in re.findall(r"(?<![\w'-])[a-z][a-z'-]*[a-z]", canon(row["text"])):
             counts[word] = counts.get(word, 0) + 1
-    with open(os.path.join(HERE, "..", "scripts", "words.txt"), "w") as f:
+    with open(os.path.join(HERE, "..", "plugin", "skills", "humanize-ai", "scripts", "words.txt"), "w") as f:
         f.write("\n".join(sorted(w for w, n in counts.items() if n >= 3)) + "\n")
     summary = {}
     for row in rows:

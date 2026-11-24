@@ -10,8 +10,8 @@ Use **Report a vulnerability** on the repo's Security tab. It opens a private re
 
 ## What's in scope
 
-- The local scorer (`scripts/detect.py --serve`) on `127.0.0.1:8765`.
-- `scripts/setup.sh` and what it installs or downloads.
+- The local scorer (`detect.py --serve`) on `127.0.0.1:8765`.
+- `setup.sh` and what it installs or downloads.
 - File handling in `--scan`, `--compare` and `--batch`.
 - Anything in the scripts that sends a draft off your machine. Nothing should: scoring runs locally, with Hugging Face set to offline mode. Claude itself will still read the draft as part of your Claude Code session.
 

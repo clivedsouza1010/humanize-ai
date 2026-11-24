@@ -1,5 +1,5 @@
 # Fit one logistic blend per genre (prose, technical docs), measure each honestly, write both to the paths given.
-# Installing the result is scripts/retrain.py's job, not this script's.
+# Installing the result is bench/retrain.py's job, not this script's.
 # Usage: python fit.py FEATURES.jsonl BLEND_OUT.json METRICS_OUT.md
 import datetime
 import functools
@@ -19,7 +19,7 @@ from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.preprocessing import StandardScaler, normalize
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
+sys.path.insert(0, os.path.join(HERE, "..", "plugin", "skills", "humanize-ai", "scripts"))
 from detect import (KNOWN_TEXT_TOP1, MIN_VERDICT_WORDS, RECALLED, REGISTERS, STRUCTURAL_FLAGS, canon, link_excess, prepare,  # noqa: E402
                     sentence_flags, split_sentences, voice_score, voice_terms)
 
@@ -508,12 +508,12 @@ def fit_genre(cfg, rows, all_sections, extra, out):
 
 
 def main():
-    # Both output paths are required. They used to default to scripts/blend.json and bench/metrics.md, so a
+    # Both output paths are required. They used to default to the live blend.json and metrics.md, so a
     # bare `fit.py features.jsonl` installed the live detector with none of retrain.py's checks run and no
     # archived version to go back to. That was the last line of the rerun recipe in bench/REPORT.md.
     if len(sys.argv) < 4:
         sys.exit("usage: fit.py FEATURES.jsonl BLEND_OUT.json METRICS_OUT.md\n"
-                 "to refit the detector people actually use, run scripts/retrain.py: it fits a candidate, puts it\n"
+                 "to refit the detector people actually use, run bench/retrain.py: it fits a candidate, puts it\n"
                  "through the gate, and archives the version it replaces so you can roll back")
     blend_file, metrics_file = sys.argv[2], sys.argv[3]
     rows = [json.loads(line) for line in open(sys.argv[1])]

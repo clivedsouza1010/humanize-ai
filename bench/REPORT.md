@@ -46,7 +46,7 @@ Claude prose by style, on the held-out split:
 
 Whole held-out documents, scored the way the skill does it: Claude's docs get an "ai" verdict 98% of the time when written under a house style guide, and 34 of 34 times in its default styles (plain, formal, long, marketing and first-person). Human READMEs get "ai" 0-4% of the time and read "human" 40-92% of the time, depending on the source. Docs from real repos credited to an AI tool (Claude, Copilot, Cursor, Codex, Devin or Gemini) are caught about half the time, 37 of 66. An earlier set also held back AI guides, FAQs, migration notes and release notes that never trained, and caught 83-100% of them, with API pages at about 60%; the current set holds none back.
 
-For comparison, on the prose test split Binoculars alone gets 0.71 accuracy, and the off-the-shelf fakespot RoBERTa detector 0.74 while flagging 16% of human text. Both move with every refit; `bench/metrics.md` carries the current pair.
+For comparison, on the prose test split Binoculars alone gets 0.71 accuracy, and the off-the-shelf fakespot RoBERTa detector 0.74 while flagging 16% of human text. Both move with every refit; `metrics.md` carries the current pair.
 
 ### What it was checked on
 
@@ -176,7 +176,7 @@ The worry left over was whether this just reads "written after 2024". Nothing in
 
 The docs numbers in this section come from the style-only detector, before the rebuild.
 
-The detector can't learn from its own verdicts, or from the skill's rewrites: that would only teach it to agree with itself. It learns from texts the user confirms the author of (`scripts/label.py`), through `scripts/retrain.py`.
+The detector can't learn from its own verdicts, or from the skill's rewrites: that would only teach it to agree with itself. It learns from texts the user confirms the author of (`label.py`), through `bench/retrain.py`.
 
 **The first round.** An author confirmed AI helped write all of a set of their docs. Eleven were labelled, giving 38 usable sections. Before those labels, those docs were the first real test of the docs detector on text it hadn't been built around. It caught about half of the held-out sections, against 93% on its training sources. The gap is exactly what labels are for. Averaged over 20 paired splits, on the rows both versions know:
 
@@ -470,7 +470,7 @@ So 0.03 catches 7-10% mislabelled text in a 300-row prose batch. On docs it catc
 
 **And one thing it makes slightly worse.** A contaminated batch that does get through becomes "old" next run and lifts the pooled rate for every later check. For a gh-2023-shaped batch that is about 1102/4073 x 0.048 = +0.013, which is 43% of the whole 0.03 margin. One miss makes the next one easier.
 
-**Testing.** The four older checks moved out of `main()` into `reasons_to_keep(cur, cand)`, and the per-genre decision into `decide(report_g)`, which is what makes any of this testable; `scripts/retrain_test.py` holds 27 tests. Two bugs in the first version were found by mutation testing and by an independent read, and both were real: a source with no scorable human row vanished from the report entirely rather than being named as thin, which is a silent pass on a 100%-flagged batch, and the row floor counted pool rows against a rate measured on scorable ones. Of 19 mutations of the fixed code, 18 are caught; the one survivor drops `sorted()` from the per-source dict, which changes the order reasons print in and nothing the gate decides.
+**Testing.** The four older checks moved out of `main()` into `reasons_to_keep(cur, cand)`, and the per-genre decision into `decide(report_g)`, which is what makes any of this testable; `bench/retrain_test.py` holds 27 tests. Two bugs in the first version were found by mutation testing and by an independent read, and both were real: a source with no scorable human row vanished from the report entirely rather than being named as thin, which is a silent pass on a 100%-flagged batch, and the row floor counted pool rows against a rate measured on scorable ones. Of 19 mutations of the fixed code, 18 are caught; the one survivor drops `sorted()` from the per-source dict, which changes the order reasons print in and nothing the gate decides.
 
 **Still open.** The pre-existing fourth check has no tolerance, so it emits reasons like `does worse on the new data 0.908 -> 0.908` on a drop of 0.0004. The gate still measures everything at 0.5 and still cannot see a single register going bad. And a refusal is genre-wide: there is no way to drop one source, so firing on gh-2023 would also hold back gh-human in the same run.
 
@@ -641,7 +641,7 @@ These were Claude readers on Claude-written drafts, on 4 docs. Treat it as a dir
 
 ## Rerun everything
 
-From `~/.cache/humanize` with `PY=~/.cache/humanize/venv/bin/python` and `B=~/.claude/skills/humanize-ai/bench`:
+From `~/.cache/humanize` with `PY=~/.cache/humanize/venv/bin/python` and `B=~/humanize-ai/bench`, where `~/humanize-ai` is a clone of this repo:
 
 ```bash
 $PY $B/fetch_raid.py data/raid.jsonl 120
@@ -659,12 +659,12 @@ $PY $B/fetch_github_docs.py pr $PWD/data/github/pr-docs.jsonl data/github/pr-pro
 $PY $B/fetch_control_docs.py
 $PY $B/paired_docs.py briefs data 9 14
 $PY $B/paired_docs.py import data WORKFLOW_OUTPUT.json
-$PY ~/.claude/skills/humanize-ai/scripts/retrain.py
+$PY $B/retrain.py
 ```
 
 `retrain.py` is the last line because it is the only path that gates a fit: it runs `build_set.py`, the
 `--batch` scoring and `fit.py` itself, then puts the result through the six checks and archives whatever it
-replaces. `fit.py` run by hand needs both output paths and will say so; it will not write `scripts/blend.json`.
+replaces. `fit.py` run by hand needs both output paths and will say so; it will not write the live `blend.json`.
 
 Four of those fetches were missing from this list until 2026-11-14, and what they feed is not marginal.
 `workhorse.jsonl` alone is 3,666 of the 10,081 docs rows, so a rebuild without it loses a third of the docs
@@ -678,7 +678,7 @@ the first `recent` fetch. The Claude-written `claude-*.jsonl` and `default-*.jso
 `holdouts.py` stops with a message when its core files are missing, and leaves the Homebrew row out when only
 that one is absent.
 
-`fit.py` writes the per-register cuts as part of the prose blend, so a plain refit picks them up. A rollback to a blend from before 2026-11-10 drops them, and `scripts/detect_test.py` fails until a refit puts them back — `--register` would otherwise be accepted and quietly do nothing.
+`fit.py` writes the per-register cuts as part of the prose blend, so a plain refit picks them up. A rollback to a blend from before 2026-11-10 drops them, and `tests/detect_test.py` fails until a refit puts them back — `--register` would otherwise be accepted and quietly do nothing.
 
 The GitHub fetches use your `gh` token, one request at a time, and the AI side takes about an hour because commit search allows few requests. Other jobs on the same token can use up the hourly limit, and the fetcher then waits it out. `paired_docs.py briefs` writes briefs for writing agents, which should be `Explore` agents so they don't inherit a CLAUDE.md. `holdouts.py` reprints the real-world table; run it after every retrain.
 
@@ -793,7 +793,7 @@ blend as a second opinion. Until 2026-11-14 SKILL.md made it a hard pass conditi
 with no genre carve-out, `grade_evals.py` scored the same bare 0.5 as one of each eval case's checks, and
 an LLM grader file repeated it in all twelve cases.
 
-`bench/metrics.md` has been contradicting that on every fit. `fit.py` writes a "fakespot RoBERTa alone" row
+`metrics.md` has been contradicting that on every fit. `fit.py` writes a "fakespot RoBERTa alone" row
 per genre, and the two rows are not the same detector in any useful sense:
 
 | genre | accuracy | AI caught | human flagged | AUROC |
@@ -827,7 +827,7 @@ code-block one, the same six prose carried. The next section moves both genres a
 comparable with anything graded after 2026-11-14.
 
 Worth knowing before quoting any figure above: when these were measured the model was unpinned.
-`scripts/setup.sh` called `snapshot_download` on the RoBERTa repo with no `revision=`, so every number in
+`setup.sh` called `snapshot_download` on the RoBERTa repo with no `revision=`, so every number in
 this section is against whatever snapshot that repo's `main` pointed at the day setup last ran. Since
 2026-11-15 setup and `detect.py` pin all three models to one commit each (DATA.md lists them), and the
 pinned snapshot scores the same. `detect.py` still reads the AI class index out of the config, with a

@@ -1,5 +1,5 @@
 # Score docs that never trained: the check on false alarms for people writing after 2023, and on AI text
-# from outside the training sources. scripts/retrain.py imports rates() and human_holdout() from here, so
+# from outside the training sources. bench/retrain.py imports rates() and human_holdout() from here, so
 # the gate's sixth check and this table are the same measurement rather than two that can drift apart.
 # Usage: python holdouts.py [DATA_DIR]
 import json
@@ -9,7 +9,7 @@ import sys
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
+sys.path.insert(0, os.path.join(HERE, "..", "plugin", "skills", "humanize-ai", "scripts"))
 from build_set import doc_rows  # noqa: E402
 from detect import canon, link_excess, load_blends, voice_score, voice_terms  # noqa: E402
 

@@ -164,7 +164,7 @@ def test_a_fit_without_labels_makes_no_salt():
             F.SALT_FILE = kept
 
 def test_fit_will_not_write_the_live_detector_without_being_told_where():
-    # a bare `fit.py features.jsonl` used to default to scripts/blend.json and bench/metrics.md, which is
+    # a bare `fit.py features.jsonl` used to default to the live blend.json and metrics.md, which is
     # how the rerun recipe installed an ungated detector. The guard is in main(), so run it as the recipe did.
     with tempfile.NamedTemporaryFile("w", suffix=".jsonl") as features:
         features.write("{}\n")

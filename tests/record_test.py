@@ -7,8 +7,8 @@ import sys
 import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SKILL = os.path.dirname(HERE)
-RECORD = os.path.join(HERE, "record.py")
+BENCH = os.path.join(HERE, "..", "bench")
+RECORD = os.path.join(HERE, "..", "plugin", "skills", "humanize-ai", "scripts", "record.py")
 
 
 def run(store, *args):
@@ -121,8 +121,8 @@ def test_run_evidence_is_never_read_as_training_data():
     # The rule this whole design exists to keep: a run is evidence, not a label. Training reads
     # feedback.jsonl, which only label.py writes, and only from something the user stated.
     # Static check, so it fails loudly the day someone wires the store into the training set.
-    builders = [os.path.join(SKILL, "bench", f) for f in os.listdir(os.path.join(SKILL, "bench")) if f.endswith(".py")]
-    builders.append(os.path.join(HERE, "retrain.py"))
+    builders = [os.path.join(BENCH, f) for f in os.listdir(BENCH) if f.endswith(".py")]
+    assert any(f.endswith("retrain.py") for f in builders)
     for path in builders:
         assert "runs.jsonl" not in open(path).read(), f"{os.path.basename(path)} reads the run store; it must not"
 

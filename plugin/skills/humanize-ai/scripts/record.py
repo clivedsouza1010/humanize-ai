@@ -106,11 +106,11 @@ def stats(args):
         if change < 0:
             print(f"\ndrift in {genre}: incoming drafts score {abs(change):.2f} lower than they used to.")
             print("That is what a stale detector looks like - the voice it was fit on has moved on.")
-            print("Refresh the AI side and retrain: bench/fetch_github_docs.py ai, then retrain.py")
+            print("Refresh the AI side and retrain, from a clone of the repo: bench/fetch_github_docs.py ai, then bench/retrain.py")
         else:
             print(f"\ndrift in {genre}: incoming drafts score {change:.2f} higher than they used to.")
             print("Either the drafts really are more machine-like, or the detector has grown trigger-happy.")
-            print("Check false alarms on known human text before trusting it: bench/holdouts.py, if you have the held-out docs")
+            print("Check false alarms on known human text before trusting it: bench/holdouts.py in a clone of the repo, if you have the held-out docs")
 
 
 def main():

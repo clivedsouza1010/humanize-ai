@@ -158,8 +158,8 @@ def fake_data_dir(tmp, raid=None):
 
 def fake_tree(tmp):
     # symlink the real modules so build_set.py runs as itself, with its words.txt landing in here
-    for name in ("bench", "scripts"):
-        os.mkdir(os.path.join(tmp, name))
+    for name in ("bench", os.path.join("plugin", "skills", "humanize-ai", "scripts")):
+        os.makedirs(os.path.join(tmp, name))
         for entry in os.listdir(os.path.join(HERE, "..", name)):
             if entry in ("words.txt", "__pycache__"):
                 continue
@@ -261,7 +261,7 @@ def test_a_retired_eval_draft_and_a_labelled_texts_words_stay_out():
         assert not any("frobnicators" in r["text"] for r in rows), "the retired draft got into the set"
         assert any("lighthouses" in r["text"] for r in rows), "a draft that isn't retired was dropped too"
         assert any(r["source"] == "feedback" and "zorblax" in r["text"] for r in rows), "the label didn't train"
-        words = open(os.path.join(tmp, "scripts", "words.txt")).read().split()
+        words = open(os.path.join(tmp, "plugin", "skills", "humanize-ai", "scripts", "words.txt")).read().split()
         assert "lighthouses" not in words and "word" in words, "words.txt wasn't built from the rows"
         assert "zorblax" not in words, "a labelled text's words shipped in words.txt"
 

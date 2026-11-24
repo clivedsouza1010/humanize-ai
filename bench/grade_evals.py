@@ -7,8 +7,8 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SKILL_DIR = os.path.join(HERE, "..")
-sys.path.insert(0, os.path.join(SKILL_DIR, "scripts"))
+REPO = os.path.join(HERE, "..")
+sys.path.insert(0, os.path.join(REPO, "plugin", "skills", "humanize-ai", "scripts"))
 import detect  # noqa: E402
 
 HIDDEN = re.compile("[​-‏⁠﻿­]")
@@ -22,7 +22,7 @@ MAX_VOICE_DRIFT = 0.22
 
 def case_genre(case, draft):
     # the genre the loop runs with: the case's own tag when it has one, else what detect.py reads off the draft
-    prompt = os.path.join(SKILL_DIR, "evals", case, "prompt.md")
+    prompt = os.path.join(REPO, "evals", case, "prompt.md")
     tags = []
     if os.path.exists(prompt):
         match = re.search(r"(?m)^tags:\s*\[([^\]]*)\]", open(prompt).read())
@@ -61,7 +61,7 @@ def main():
     for final_path in sorted(glob.glob(os.path.join(iteration, "**", "outputs", "final.txt"), recursive=True)):
         run_dir = os.path.dirname(os.path.dirname(final_path))
         case, *config = os.path.relpath(run_dir, iteration).split(os.sep)
-        draft = open(os.path.join(SKILL_DIR, "evals", case, "files", "draft.txt")).read()
+        draft = open(os.path.join(REPO, "evals", case, "files", "draft.txt")).read()
         final = open(final_path).read()
         genre = case_genre(case, draft)
         before, after = score(draft, genre), score(final, genre)
@@ -69,7 +69,7 @@ def main():
         odd = odd_words(draft, final)
         tricks = HIDDEN.findall(final) + NON_LATIN_LETTER.findall(final)
         low, high = length_bounds(genre)
-        # The second opinion reads prose. bench/metrics.md puts it below chance on docs (AUROC 0.345: 16% of
+        # The second opinion reads prose. references/metrics.md puts it below chance on docs (AUROC 0.345: 16% of
         # known-human docs flagged against 9% of AI docs caught), and a document takes the highest of its
         # sections, so on docs this check fails the long human rewrites and passes the AI ones. `both` keeps
         # it: the inversion was measured on the docs corpus, and a `both` case is prose with headings.
@@ -120,7 +120,7 @@ def main():
             # a missing measurement is not a pass: compare drops voice_drift if blend.json carries no docs
             # ngram table, and a rollback can do that
             (f"final.txt stays inside {MAX_VOICE_DRIFT} voice_drift of draft.txt", facts.get("voice_drift", 1.0) < MAX_VOICE_DRIFT,
-             f"voice_drift {facts.get('voice_drift', 'not reported: scripts/blend.json has no docs ngram table')}"),
+             f"voice_drift {facts.get('voice_drift', 'not reported: blend.json has no docs ngram table')}"),
         ]
         # Code blocks are checked in every genre. facts() leaves anything inside a block to this check, so it is
         # the only fact check a block gets: a number invented inside an added fence never reaches `added`, and

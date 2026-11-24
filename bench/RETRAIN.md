@@ -1,0 +1,45 @@
+# Retraining
+
+Retrains run from a clone of the repo, never from a plugin install, and replace the detector in `plugin/skills/humanize-ai`. From the repo root:
+
+```bash
+PY=~/.cache/humanize/venv/bin/python
+$PY bench/retrain.py
+```
+
+Retraining needs the training corpus in `~/.cache/humanize/data`, which isn't shipped. Without it `retrain.py` stops and names the missing files, and the labels stay saved for when the corpus is there.
+
+The detector records which labels it has learned from as salted hashes, so `blend.json` can't be matched to the labelled texts. The salt is `~/.cache/humanize/label-salt` and never leaves the machine. Keep it with `~/.cache/humanize/data` if you move machines. Without it every label counts as new, so a genre with nothing new gets refit and judged again until a promotion records the new salt.
+
+It rebuilds the data and fits a candidate. Then, for each genre that has new labels or a new dataset, it fits the old and new setups on the same 20 random splits and scores them on the same held-out texts. A genre with nothing new stays exactly as it is. A genre's detector is replaced only if, on average, AUROC doesn't drop more than 0.005, false alarms on human text don't rise more than 1 point, AI caught doesn't drop more than 2 points, it doesn't do worse on the new data, no new source's own human rows flag more than 3 points above the rate on everything else, and — for `docs` — it doesn't call more than 1 point more of the held-out human docs AI.
+
+The fifth is the only one that's a property of the batch rather than a comparison, so it reads the same way every run until someone acts on it. The first four can clear with more data. A source with fewer than 250 human rows long enough to score is printed as too thin to judge, and is not judged.
+
+The sixth is the only one read on text outside the split: the ban-policy docs and the pre-policy project snapshots that `bench/holdouts.py` reports, scored on the blend that would actually ship. It exists because the second check cannot see what it is for — that figure is pooled over thousands of pre-2023 docs, so a few hundred recent ones cannot move it however badly they go. Measured across the saved versions with `bench/score_blend_versions.py`, five promotions in a row left the held-out rate at 0.091 and then two on 2026-11-11 took it to 0.105 and 0.127, while the pooled figure went 0.006 to 0.007. Both would now be refused, which is the point: the trade is real and it should be yours to make with `--force` rather than one the gate makes quietly. Under 100 held-out docs it says so and does not judge.
+
+If the gate keeps the current detector, the labels stay saved. Show the user the table it prints and let them choose: catching more text like theirs at the cost of more false alarms is their call. To accept it:
+
+```bash
+$PY bench/retrain.py --force docs --note "accepted the false alarms to catch more of my own docs"
+```
+
+Every version your own retrains replace is kept on this machine, with its metrics. `--history` also lists the maintainer's earlier versions, which don't ship, so only the ones saved here can be rolled back to:
+
+```bash
+$PY bench/retrain.py --history
+$PY bench/retrain.py --rollback VERSION   # one saved on this machine
+```
+
+The rest is for whoever holds the training corpus and the held-out docs, which don't ship. Keeping the human side as recent as the AI side matters as much as new AI data. `bench/fetch_hn.py` tops up recent forum prose and `bench/fetch_wikipedia.py` tops up recent encyclopedic prose; neither needs a token or a label, and both should be run every few months.
+
+For **docs**, recency is the hard one, because a date window is not provenance: writing since 2023 is exactly where AI help is most common. The only route that holds up is projects that publicly **ban** AI contributions, taking the docs they gained after the ban took effect. A **disclosure** rule is not provenance and must not be used this way: it permits AI, so the window is mostly AI prose. Measured on 2026-11-11, docs from ban projects flag as AI 1.8% and 10.9% of the time in two independent batches, while docs from disclosure projects flag 44.6% and 77.3% of the time against 77.5% for a corpus of self-declared AI PRs. Run `bench/holdouts.py` rather than trusting the numbers written here: they moved to 3.6% and 12.8% that day under two promotions and back again when those were rolled back, and the gate's own false-alarm check saw almost none of it. That is what the sixth check is for. Read the holdout's ban line as the false-alarm number; its disclosure line is a mixture, not a human rate. `~/.cache/humanize/data/github/policies.json` holds the 25 projects behind the holdout and `policies-train.json` the 17 added later, each with the verbatim policy quote, its URL, and the date the clause was demonstrably present by. Neither trains: `bench/holdouts.py` reads both. Both files also keep every rejection, which is the more useful half: 421 of 439 candidates failed. Before adding a project, check the four things that did the rejecting — docs that are prose markdown rather than `.rst`, `.adoc` or generated reference; a real ban rather than "review what you submit" (a must-disclose rule can be recorded, but never used as human provenance); no `AGENTS.md`, `CLAUDE.md`, `.cursor/rules` or Copilot instructions in the repo, because a project that runs on agents cannot vouch for its own docs; and few AI trailers on docs commits since the policy. Watch for the trap in the last one: a policy that forbids AI trailers makes its own docs unverifiable, so a zero count there proves nothing and the PR bodies have to be read instead. `bench/provenance.py` does that reading — a merged pull request's trailers, checkboxes and AI-usage section, giving `ai`, `human` or `unknown`, with `fetch_github_docs.py pr` collecting the docs those pull requests wrote. It is accurate (against an independent reader on 363 pull requests from 21 projects it agrees on 359, and every verdict it issues matches) and it is still not a way to get human docs: 4,779 merged pull requests gave 1,455 AI declarations and 491 human ones, and once a label is only allowed to cover a file the pull request wrote nearly all of, 41 AI docs and 1 human doc survive. Those are held back as well, and `holdouts.py` pairs each project against its own docs from the day its policy took effect, because a project's pre-policy flag rate runs from 0.000 to 0.417 and one pooled number hides that completely. Err late on the date — too early pulls pre-policy docs onto the human side, too late only costs rows.
+
+Watch the register whenever a human source lands. The first HN run added 520 short forum comments and the gate refused them, and the damage turned out to sit in **one** register: declarative third-person reportage went from 35% to 42% flagged while every other human register stayed put or improved. REPORT.md has that round in full, including the per-register table the pooled false-alarm number hides.
+
+Three things that round taught, worth checking before any new human source lands:
+
+- **A filter that removes something both labels do is worse than no filter.** It turns that thing into an AI cue. Two filters in the Wikipedia fetcher failed this way before anyone noticed: one dropped every sentence with a copula plus an article, the other dropped any paragraph that quoted twice. Both read as format filters and both were style filters. Look at the drop counts, not at a green test suite.
+- **Check who actually wrote the text, not who saved it.** A diff cell for a partly edited line holds the whole line, so "added by" is not "written by" unless the line is wholly new.
+- **A contaminated batch is checked for now, but the check is narrow.** The gate refuses a new source whose own human rows flag more than 3 points above the rate on everything else, measured per source and only once the source has 250 scorable human rows. It catches roughly 7% mislabelled AI text in a 300-row prose batch and about 1% in a docs batch, because the docs detector keeps flagging the mislabelled rows even after training on them while the prose one absorbs them. Four things it can't do: it can't tell a mislabelled batch from a register the detector reads badly, so it refuses both and leaves the call to you; it's blind to contamination made of default-voice Claude prose, which the prose detector caught only 59% of the time in the 2026-11-10 contamination runs (REPORT.md, "The contamination check"); it reads one rate per source, so a bad register inside a mixed source still averages away; and hand-labelled rows all share the source name `feedback`, so that channel can't reach the row floor and is never judged. The old advice still holds for everything the check can't see: read `new_human_flagged` and the per-source rates in the output yourself.
+
+[REPORT.md](REPORT.md) says how the data was built and what the numbers mean, and [metrics.md](../plugin/skills/humanize-ai/references/metrics.md) holds the numbers from the last fit.
