@@ -599,6 +599,28 @@ More rounds of guide tweaks are unlikely to show up in an eight-case benchmark. 
 
 Judges are Claude models, so treat all of this as an editor's opinion. The only real test of "does it read as human" is a person who doesn't know which is which.
 
+### Against a rewriting tool
+
+On 2026-11-28 two of the eval drafts, the talk abstract and the Reddit loan answer, went through the free humanize.ai rewriter in its default mode. Its free tier allows two rewrites a day. The two outputs were compared with the skill's and a plain Claude rewrite's from iteration 7, which ran on 2026-11-03 with an earlier version of the skill.
+
+Both of its outputs had no commas and no contractions at all, against about 4.7 commas per 100 words in the drafts. It also added doubt the authors never had ("I am not totally sure how to frame all the retry stuff", "I guess") and dropped facts: 500 and 50,000 jobs a minute, nine weeks, Kafka, the 50-100% return on an employer match, three months of savings. Its own detector put the outputs at 4% and 7% AI. This detector called the talk abstract `ai` at 0.622, higher than the draft's 0.253, and the Reddit answer `unclear` at 0.458 under `--register forum`.
+
+Six blind readers (Explore agents, three per draft) each ranked the three rewrites:
+
+| | humanize.ai | skill | plain rewrite |
+|---|---|---|---|
+| least human | 6 of 6 | 0 | 0 |
+| least faithful | 6 of 6 | 0 | 0 |
+| most faithful | 0 | 6 of 6 | 0 |
+| would send it | 0 | 6 of 6 | 0 |
+| reads most human | 0 | 2 | 4 |
+
+The plain rewrite won on sounding human by being tighter, and lost on faithfulness for the same reason: "a split is totally reasonable" became "I'd just split it" and "it wasn't the code" became "Mostly, it wasn't the code". The rewrite guide's move 14 now asks for that tightening without the change in claim strength.
+
+A first check of move 14, on two drafts the guide's examples don't come from (the cover letter and the email to a manager), one run each with the skill before and after it, and two blind readers per draft: the version with move 14 was more faithful and the one to send in 4 of 4 readings, and read as more human in none (3 went to the old guide, 1 was a tie). So it buys faithfulness, not voice. None of the four runs reached the bar either: the drafts scored 0.98-0.99 and the handed-over rounds 0.85-0.97, all `ai`.
+
+**The comma check.** Raw model output always punctuates. In the training sources, none of 11,858 AI texts of 150 words or more had no commas at all, against 127 of 14,770 human ones, nearly all casual Reddit answers (0.86%). Leaving out contractions as well brings the human count to 55 (0.37%), but that leans on one tool's habits, so the check uses commas only. It is not part of the score: a comma-free text gets a `rewriter_sign` note instead, because a person can write that way too, and two outputs from one tool are not enough to fit a weight on. Docs are left out, since lists and short lines drop commas in both labels (0.59% of human docs, 0.27% of AI ones).
+
 ## Rewrite loop on technical docs
 
 Four Claude-written docs the detector never trained on (two READMEs, a getting-started guide and an API reference page), each rewritten twice with the skill and twice without it, in two rounds. A seventh check requires every code block to come back unchanged, and docs have to land within 0.85-1.15x the draft's length rather than the 0.7-1.3x prose gets.
