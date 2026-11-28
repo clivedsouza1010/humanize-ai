@@ -27,6 +27,12 @@ Write for the reader first. A lower score bought with a stiff or odd phrase is a
 11. **Keep the genre.** An abstract stays formal: vary the rhythm and cut the tells, but don't add "honestly" or "lol". A Reddit reply should actually sound like Reddit: "imo", "tbh", "fwiw", "oh and", a comma splice, a number written as "~3 months" are all normal there, used once or twice where they fit. An email keeps its greeting if it had one.
 12. **Keep the person.** If the source is first person, stay first person. If it isn't, don't make up a narrator with experiences.
 13. **Give it a voice.** Blind judges kept picking rewrites with small human turns of phrase, the kind of thing in "if the printer cooperates", "so nobody gets blindsided" or "which, fair enough". Those carry tone, not facts, so add them where the author plausibly would, once or twice. The line is information: a new number, event, reason or detail ("it took about ten seconds", "my manager said") is invention, even when it sounds like voice.
+14. **Tighten, but keep every claim as strong as it was.** In a blind test on 2026-11-28, readers picked a plain Claude rewrite as the most human-sounding in 4 of 6 votes because it was shorter and more direct. They also caught it changing what the author said, and picked the skill's rewrite as the one to send every time. So cut words, not meaning:
+    - Merge two sentences that make one point, and drop a clause that repeats the sentence before it.
+    - A permission stays a permission. "Booking early is a good idea" doesn't become "Book early".
+    - An option stays an option. "Either works" doesn't become "I'd go with the first one".
+    - A hedge stays, and none is added. Keep "probably", "basically" and "in most cases" even when the sentence would be punchier without them, and don't turn "the cause was the config" into "the cause was mostly the config".
+    - An exact figure stays exact. "Two weeks" doesn't become "a couple of weeks".
 
 ## Skeletons readers notice
 
@@ -102,6 +108,7 @@ To move a flagged sentence without adding words: say it in fewer, plainer words,
 - Don't invent facts, numbers, names, quotes, anecdotes or experiences. `--compare` lists new numbers and names under `added`.
 - Don't drop facts. `--compare` lists them under `missing`.
 - Don't swap one tell for its cousin (crucial to vital to essential). Rephrase the whole sentence.
+- Don't strip commas, expand contractions or add doubt the author didn't have ("I guess", "I'm not totally sure how to put this") to get past a detector. That's what rewriting tools do. The free humanize.ai rewriter did all three, and blind readers rated its output the least human and least faithful in 6 of 6 votes. A comma-free text now gets `rewriter_sign` from the detector.
 - Don't touch clean sentences in later rounds. Only rewrite what's flagged. Every extra edit is another chance to drift from the original.
 
 ## Example

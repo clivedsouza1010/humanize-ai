@@ -40,6 +40,7 @@ Read these fields:
 - `sentences[].habits`: patterns like colons, em dashes or "However," openers that, in this genre's training data, people use as much as models do. Shown for interest; don't rewrite for them.
 - `sentences[].recalled`: the sentence is quoted or standard wording (no AI training sentence scores that predictable), so it carries no flags.
 - `warning`: under 80 words there's no verdict at all, only the sentence flags. No AI training text was that short, so any score would be a guess.
+- `rewriter_sign`: prose of 150 words or more with no commas at all. None of the AI texts in the training data do this. About 1 long human post in 115 does, and so does the free humanize.ai rewriter, which stripped every comma from both texts tried. It doesn't change the score. Tell the user the text may have been through a rewriting tool, and that a low score on it means less than usual.
 - `human_bar`: the score a text has to stay under for `verdict: human`.
 - `ai_bar`: the score at which the verdict turns `ai`, and `register`: the register it was judged against, if you named one.
 - `voice_pushes_ai`: for docs, the function-word patterns pushing this section toward AI, strongest first, as pattern, count and push. `...` is any other word, `(sentence start)` is the start of a sentence and `(name)` is a name or code. `(sentence start) ...` counts imperatives and fragments like "Needs Node 18", so it can stay on top of a doc that's fine.
@@ -179,6 +180,7 @@ It's the same loop, with these changes:
 The full list is in `references/rewrite-guide.md`. The ones that matter most:
 
 - Keep every fact, number, name and claim. Add none. No invented anecdotes or experiences.
+- Tighten by cutting words, not meaning. A permission stays a permission, an option isn't turned into your pick, a hedge stays where it was and isn't added where the draft was flat, and an exact figure stays exact.
 - A turn of phrase isn't a fact. "If the printer cooperates" or "so nobody gets blindsided" adds voice, not information, and that's what makes text sound like someone wrote it. A new number, name, event, reason or claim is a fact, and isn't allowed.
 - Keep the genre and register. An abstract stays formal. A Reddit reply can be loose.
 - No typos, hidden characters, look-alike letters, or slang the writer and genre wouldn't use. They make the text worse, and detectors catch them. Casual markers the genre normally uses ("imo" on Reddit) are fine.

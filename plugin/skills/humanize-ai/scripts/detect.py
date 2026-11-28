@@ -645,6 +645,19 @@ def text_verdict(probs, bars):
     return "unclear"
 
 
+# Of 11,858 AI texts of 150+ words in the training sources none was comma-free, against 127 of 14,770 human ones
+# (mostly casual Reddit answers). humanize.ai's free rewriter stripped every comma in both texts tried on 2026-11-28.
+REWRITER_MIN_WORDS = 150
+
+
+def rewriter_sign(prose, n_words, genre):
+    # reported next to the score, never folded into it: a person can write this way too
+    if genre == "docs" or n_words < REWRITER_MIN_WORDS or "," in prose or "\uff0c" in prose:
+        return {}
+    return {"rewriter_sign": f"no commas in {n_words} words. Raw AI text never does this in the training data and about "
+                             "1 long human post in 115 does, but so does at least one AI-rewriting tool, so a low score here means less than usual"}
+
+
 def pick_genre(text, genre, path=None):
     if genre != "auto":
         return genre
@@ -672,7 +685,7 @@ def analyse_document(text, scorer, heldout=False, genre="auto", path=None, regis
     kept = {k: v for k, v in skipped.items() if v}
     not_read = {"not_read": kept} if kept else {}
     sections = doc_sections(prose)
-    named = {"register": register} if register else {}
+    named = ({"register": register} if register else {}) | rewriter_sign(prose, n_words, genre)
     if len(sections) <= 1:
         return analyse(prose, scorer, blends, heldout, ext_rate, register) | {"genre": genre} | named | not_read
     results = [analyse(section, scorer, blends, heldout, ext_rate, register) for section in sections]

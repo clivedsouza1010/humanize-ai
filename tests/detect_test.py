@@ -240,6 +240,16 @@ def test_a_footnote_whose_text_opens_with_a_label_still_reads():
     assert "A Framework for Public Health" in D.doc_prose(doc)
 
 
+def test_a_long_text_with_no_commas_is_reported_but_not_scored_for_it():
+    long = SENTENCE * 10
+    bare, punctuated = scored(0.2, None, long), scored(0.2, None, long.replace("late and", "late, and", 1))
+    assert "rewriter_sign" in bare and "rewriter_sign" not in punctuated
+    assert (bare["ai_probability"], bare["verdict"]) == (punctuated["ai_probability"], punctuated["verdict"])
+    # under 150 words a missing comma is too common to mean anything, and docs drop commas with their lists
+    assert "rewriter_sign" not in scored(0.2, None, TEXT)
+    assert D.rewriter_sign(long, 170, "docs") == {}
+    assert D.rewriter_sign(long.replace("late and", "late\uff0c and", 1), 170, "prose") == {}
+
 def test_markdown_the_parser_cannot_read_is_skipped_not_raised():
     assert D.parse_md("[]:A:") == []
 
