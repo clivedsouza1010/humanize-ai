@@ -617,6 +617,8 @@ Six blind readers (Explore agents, three per draft) each ranked the three rewrit
 
 The plain rewrite won on sounding human by being tighter, and lost on faithfulness for the same reason: "a split is totally reasonable" became "I'd just split it" and "it wasn't the code" became "Mostly, it wasn't the code". The rewrite guide's move 14 now asks for that tightening without the change in claim strength.
 
+A first check of move 14, on two drafts the guide's examples don't come from (the cover letter and the email to a manager), one run each with the skill before and after it, and two blind readers per draft: the version with move 14 was more faithful and the one to send in 4 of 4 readings, and read as more human in none (3 went to the old guide, 1 was a tie). So it buys faithfulness, not voice. None of the four runs reached the bar either: the drafts scored 0.98-0.99 and the handed-over rounds 0.85-0.97, all `ai`.
+
 **The comma check.** Raw model output always punctuates. In the training sources, none of 11,858 AI texts of 150 words or more had no commas at all, against 127 of 14,770 human ones, nearly all casual Reddit answers (0.86%). Leaving out contractions as well brings the human count to 55 (0.37%), but that leans on one tool's habits, so the check uses commas only. It is not part of the score: a comma-free text gets a `rewriter_sign` note instead, because a person can write that way too, and two outputs from one tool are not enough to fit a weight on. Docs are left out, since lists and short lines drop commas in both labels (0.59% of human docs, 0.27% of AI ones).
 
 ## Rewrite loop on technical docs
